@@ -1,2 +1,2 @@
-# Sales Integrated Platform
-A AI-Based platform
+# mlinfo_kb_platform
+A AI-Based KB
