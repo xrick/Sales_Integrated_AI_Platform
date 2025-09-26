@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MGFD 筆記型電腦購物助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .chat-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message.assistant {
+            justify-content: flex-start;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            word-wrap: break-word;
+        }
+
+        .message.user .message-content {
+            background: #667eea;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.assistant .message-content {
+            background: white;
+            color: #333;
+            border: 1px solid #e1e5e9;
+            border-bottom-left-radius: 4px;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            margin: 0 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .avatar.user {
+            background: #667eea;
+            color: white;
+        }
+
+        .avatar.assistant {
+            background: #28a745;
+            color: white;
+        }
+
+        .input-container {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e1e5e9;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 25px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .message-input:focus {
+            border-color: #667eea;
+        }
+
+        .send-button {
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+
+        .send-button:hover {
+            background: #5a6fd8;
+        }
+
+        .send-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .session-info {
+            background: #e3f2fd;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            color: #1976d2;
+        }
+
+        .recommendations {
+            background: #f0f8ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+
+        .recommendation-item {
+            background: white;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+        }
+
+        .recommendation-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .product-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .product-details {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .stats {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* Funnel Question 樣式 */
+        .funnel-container {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 10px 0;
+        }
+
+        .funnel-container h3 {
+            color: #495057;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .funnel-question {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .funnel-message {
+            color: #6c757d;
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .funnel-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .funnel-option-btn {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .funnel-option-btn:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.1);
+        }
+
+        .funnel-option-btn:active {
+            transform: translateY(0);
+        }
+
+        .option-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .option-icon {
+            font-size: 18px;
+            margin-right: 10px;
+        }
+
+        .option-title {
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .option-description {
+            color: #6c757d;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        /* Elicitation 樣式 */
+        .elicitation-container {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+
+        .suggestions {
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .suggestion-chip {
+            background: #667eea;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .suggestion-chip:hover {
+            background: #5a6fd8;
+        }
+
+        /* Clarification 樣式 */
+        .clarification {
+            background: #e3f2fd;
+            border: 1px solid #b3d9ff;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+
+        /* Funnel Complete 樣式 */
+        .funnel-complete {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 10px 0;
+        }
+
+        .funnel-complete h3 {
+            color: #155724;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .complete-message {
+            text-align: center;
+            color: #155724;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+
+        .flow-info {
+            background: white;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .flow-info h4 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .flow-info p {
+            margin-bottom: 8px;
+            color: #666;
+        }
+
+        .loading-indicator {
+            text-align: center;
+            color: #6c757d;
+        }
+
+        .loading-indicator p {
+            margin-top: 10px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 MGFD 筆記型電腦購物助手</h1>
+            <p>Multi-Guided Funnel Dialogue 智能對話系統</p>
+        </div>
+
+        <div class="chat-container" id="chatContainer">
+            <div class="session-info" id="sessionInfo">
+                正在初始化會話...
+            </div>
+            <div class="stats" id="stats">
+                系統狀態: 初始化中...
+            </div>
+        </div>
+
+        <div class="input-container">
+            <div class="input-group">
+                <input 
+                    type="text" 
+                    id="messageInput" 
+                    class="message-input" 
+                    placeholder="請告訴我您想要什麼樣的筆電..."
+                    disabled
+                >
+                <button id="sendButton" class="send-button" disabled>
+                    發送
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class MGFDChat {
+            constructor() {
+                this.sessionId = null;
+                this.isLoading = false;
+                this.renderedQuestions = new Set(); // 追蹤已渲染的問題
+                this.questionHistory = new Map(); // 問題歷史記錄
+                this.init();
+            }
+
+            async init() {
+                try {
+                    await this.createSession();
+                    await this.loadStats();
+                    this.setupEventListeners();
+                    this.enableInput();
+                } catch (error) {
+                    console.error('初始化失敗:', error);
+                    this.showError('系統初始化失敗，請刷新頁面重試');
+                }
+            }
+
+            async createSession() {
+                const response = await fetch('/api/mgfd_cursor/session/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({})
+                });
+
+                if (!response.ok) {
+                    throw new Error('創建會話失敗');
+                }
+
+                const data = await response.json();
+                this.sessionId = data.session_id;
+                
+                // 🔄 清理問題歷史（新會話時）
+                this.questionHistory.clear();
+                this.renderedQuestions.clear();
+                console.log('🆕 New session created, question history cleared');
+                
+                this.addMessage('assistant', data.message);
+                this.updateSessionInfo();
+            }
+
+            async loadStats() {
+                try {
+                    const response = await fetch('/api/mgfd_cursor/stats');
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.updateStats(data.system_stats);
+                    }
+                } catch (error) {
+                    console.error('載入統計信息失敗:', error);
+                }
+            }
+
+            setupEventListeners() {
+                const messageInput = document.getElementById('messageInput');
+                const sendButton = document.getElementById('sendButton');
+
+                messageInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !this.isLoading) {
+                        this.sendMessage();
+                    }
+                });
+
+                sendButton.addEventListener('click', () => {
+                    if (!this.isLoading) {
+                        this.sendMessage();
+                    }
+                });
+            }
+
+            enableInput() {
+                document.getElementById('messageInput').disabled = false;
+                document.getElementById('sendButton').disabled = false;
+            }
+
+            async sendMessage() {
+                const messageInput = document.getElementById('messageInput');
+                const message = messageInput.value.trim();
+
+                if (!message || this.isLoading) return;
+
+                this.isLoading = true;
+                this.setLoadingState(true);
+
+                // 添加用戶消息
+                this.addMessage('user', message);
+                messageInput.value = '';
+
+                try {
+                    const response = await fetch('/api/mgfd_cursor/chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            message: message,
+                            session_id: this.sessionId
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('發送消息失敗');
+                    }
+
+                    const data = await response.json();
+                    
+                    console.log('🔄 Received data from backend:', data);
+                    
+                    // 智能處理兩種回應格式
+                    let content, fullData;
+                    
+                    if (data.type && (data.type === 'funnel_question' || data.type === 'funnel_complete' || data.type === 'elicitation' || data.type === 'recommendation' || data.type === 'clarification' || data.type === 'error')) {
+                        // 直接的結構化回應格式
+                        content = data;  // 將整個物件作為內容
+                        fullData = data;
+                        console.log('📋 Detected structured response format:', data.type);
+                    } else if (data.response !== undefined) {
+                        // 標準的包裝格式 {response: content, ...}
+                        content = data.response;
+                        fullData = data;
+                        console.log('📦 Detected standard response format');
+                    } else if (data.success === false && data.error) {
+                        // 錯誤回應格式
+                        content = data.error;
+                        fullData = data;
+                        console.log('❌ Detected error response format');
+                    } else {
+                        // 降級處理：將整個回應作為內容處理
+                        content = data;
+                        fullData = data;
+                        console.log('🔧 Fallback: treating entire data as structured content');
+                    }
+                    
+                    // 添加助手回應
+                    this.addMessage('assistant', content, fullData);
+
+                    // 更新會話信息
+                    this.updateSessionInfo(fullData);
+
+                } catch (error) {
+                    console.error('發送消息失敗:', error);
+                    this.showError('發送消息失敗，請重試');
+                } finally {
+                    this.isLoading = false;
+                    this.setLoadingState(false);
+                }
+            }
+
+            addMessage(role, content, data = null) {
+                const chatContainer = document.getElementById('chatContainer');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${role}`;
+
+                const avatar = document.createElement('div');
+                avatar.className = `avatar ${role}`;
+                avatar.textContent = role === 'user' ? 'U' : 'A';
+
+                const messageContent = document.createElement('div');
+                messageContent.className = 'message-content';
+
+                if (role === 'assistant') {
+                    // 處理助手回應 - 支援結構化JSON回應
+                    this.renderAssistantMessage(messageContent, content, data);
+                } else {
+                    // 用戶消息保持簡單文字顯示
+                    messageContent.textContent = content;
+                }
+
+                messageDiv.appendChild(avatar);
+                messageDiv.appendChild(messageContent);
+                chatContainer.appendChild(messageDiv);
+
+                // 滾動到底部
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+
+            renderAssistantMessage(container, content, data = null) {
+                console.log('🔧 renderAssistantMessage called with:', { 
+                    contentType: typeof content, 
+                    contentValue: content, 
+                    dataType: typeof data,
+                    dataKeys: data ? Object.keys(data) : null
+                });
+                
+                // 處理 null 或 undefined 的內容
+                if (content === null || content === undefined) {
+                    console.error('❌ Content is null or undefined, using fallback');
+                    if (data && typeof data === 'object') {
+                        content = data;  // 使用整個 data 對象作為內容
+                        console.log('🔄 Using data object as content:', data);
+                    } else {
+                        container.innerHTML = '<p style="color: orange;">⚠️ 收到空白回應</p>';
+                        return;
+                    }
+                }
+                
+                // 如果content是字符串但看起來像JSON，嘗試解析
+                let parsedContent = content;
+                if (typeof content === 'string') {
+                    try {
+                        // 檢查是否是JSON字符串
+                        if (content.trim().startsWith('{') && content.trim().endsWith('}')) {
+                            parsedContent = JSON.parse(content);
+                            console.log('📝 Parsed JSON content:', parsedContent);
+                        }
+                    } catch (e) {
+                        console.log('📝 Content is not JSON, treating as plain text:', e.message);
+                    }
+                }
+                
+                // 如果是結構化數據，處理特殊類型
+                if (typeof parsedContent === 'object' && parsedContent !== null) {
+                    console.log('🎯 Processing structured content:', parsedContent);
+                    this.renderStructuredResponse(container, parsedContent);
+                } else if (data && data.recommendations) {
+                    // 兼容舊格式：如果有推薦產品，格式化顯示
+                    console.log('📋 Processing legacy recommendation format');
+                    container.innerHTML = this.formatRecommendations(content, data.recommendations);
+                } else {
+                    // 普通文字回應
+                    console.log('📄 Processing plain text response');
+                    container.textContent = content || '(空白回應)';
+                }
+            }
+
+            renderStructuredResponse(container, response) {
+                console.log('🎯 renderStructuredResponse called with:', response);
+                
+                const responseType = response.type || 'text';
+                
+                switch (responseType) {
+                    case 'funnel_question':
+                        this.renderFunnelQuestion(container, response);
+                        break;
+                    case 'funnel_complete':
+                        this.renderFunnelComplete(container, response);
+                        break;
+                    case 'elicitation':
+                        this.renderElicitation(container, response);
+                        break;
+                    case 'recommendation':
+                        this.renderRecommendation(container, response);
+                        break;
+                    case 'clarification':
+                        this.renderClarification(container, response);
+                        break;
+                    case 'error':
+                        this.renderError(container, response);
+                        break;
+                    default:
+                        // 處理未知類型或一般回應
+                        this.renderGeneralResponse(container, response);
+                }
+            }
+
+            renderFunnelQuestion(container, response) {
+                console.log('🔥 Rendering funnel question:', response);
+                
+                // 增強的格式驗證和錯誤處理
+                if (!response) {
+                    console.error('❌ Response is null or undefined');
+                    container.innerHTML = '<p style="color: red;">回應數據為空</p>';
+                    return;
+                }
+                
+                const { question, session_id, message } = response;
+                
+                // 詳細的字段驗證
+                if (!question) {
+                    console.error('❌ Missing question field in response:', response);
+                    container.innerHTML = '<p style="color: red;">缺少問題數據</p>';
+                    return;
+                }
+                
+                if (!question.question_text) {
+                    console.error('❌ Missing question_text in question:', question);
+                    container.innerHTML = '<p style="color: red;">缺少問題文字</p>';
+                    return;
+                }
+                
+                if (!question.options || !Array.isArray(question.options) || question.options.length === 0) {
+                    console.error('❌ Invalid options in question:', question.options);
+                    container.innerHTML = '<p style="color: red;">缺少有效的選項</p>';
+                    return;
+                }
+                
+                // 驗證選項格式
+                for (let i = 0; i < question.options.length; i++) {
+                    const option = question.options[i];
+                    if (!option.option_id || !option.label || !option.description) {
+                        console.error(`❌ Invalid option at index ${i}:`, option);
+                        container.innerHTML = `<p style="color: red;">選項 ${i + 1} 格式錯誤</p>`;
+                        return;
+                    }
+                }
+                
+                // 🔄 新增：去重邏輯檢查  
+                const questionKey = this.generateQuestionKey(question, session_id);
+                const currentTime = Date.now();
+                
+                // 檢查是否是重複的問題（5分鐘內的相同問題視為重複）
+                if (this.questionHistory.has(questionKey)) {
+                    const lastTime = this.questionHistory.get(questionKey);
+                    const timeDiff = currentTime - lastTime;
+                    const DUPLICATE_THRESHOLD = 5 * 60 * 1000; // 5分鐘
+                    
+                    if (timeDiff < DUPLICATE_THRESHOLD) {
+                        console.warn('🚫 Duplicate funnel question detected, skipping render:', {
+                            questionKey,
+                            timeDiff: `${Math.round(timeDiff/1000)}s`,
+                            threshold: `${DUPLICATE_THRESHOLD/1000}s`
+                        });
+                        
+                        container.innerHTML = `
+                            <div class="funnel-container" style="opacity: 0.7; border: 2px dashed #ffc107;">
+                                <h3>⚠️ 重複問題偵測</h3>
+                                <p class="funnel-message">此問題在 ${Math.round(timeDiff/1000)} 秒前已顯示過，已自動略過重複渲染。</p>
+                                <p style="font-size: 12px; color: #6c757d;">如果這是錯誤，請重新整理頁面或聯絡技術支援。</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                }
+                
+                // 記錄此問題的顯示時間
+                this.questionHistory.set(questionKey, currentTime);
+                
+                console.log('✅ Funnel question validation passed');
+                
+                let html = `
+                    <div class="funnel-container" data-question-key="${questionKey}">
+                        <h3>🎯 需求類型選擇</h3>
+                        <p class="funnel-question">${question.question_text}</p>
+                        ${message ? `<p class="funnel-message">${message}</p>` : ''}
+                        
+                        <div class="funnel-options">
+                `;
+                
+                question.options.forEach((option, index) => {
+                    html += `
+                        <button class="funnel-option-btn" 
+                                data-option-id="${option.option_id}" 
+                                data-session-id="${session_id}"
+                                onclick="mgfdChat.handleFunnelOptionClick('${option.option_id}', '${session_id}')">
+                            <div class="option-header">
+                                <span class="option-icon">${option.label.split(' ')[0] || '📋'}</span>
+                                <span class="option-title">${option.label.split(' ').slice(1).join(' ') || option.label}</span>
+                            </div>
+                            <div class="option-description">${option.description}</div>
+                        </button>
+                    `;
+                });
+                
+                html += `
+                        </div>
+                    </div>
+                `;
+                
+                container.innerHTML = html;
+            }
+            
+            // 🆕 新增：生成問題唯一鍵的方法
+            generateQuestionKey(question, sessionId = '') {
+                // 基於問題文字、選項和會話ID生成唯一鍵
+                const questionText = question.question_text || '';
+                const optionsText = question.options ? 
+                    question.options.map(opt => `${opt.option_id}-${opt.label}`).join('|') : '';
+                
+                // 包含session_id避免不同會話間的重複問題誤判
+                const key = `${sessionId}::${questionText}::${optionsText}`;
+                
+                // 使用簡單的雜湊函數生成較短的鍵
+                let hash = 0;
+                for (let i = 0; i < key.length; i++) {
+                    const char = key.charCodeAt(i);
+                    hash = ((hash << 5) - hash) + char;
+                    hash = hash & hash; // 轉換為32位整數
+                }
+                
+                return `fq_${Math.abs(hash).toString(16)}`;
+            }
+
+            renderElicitation(container, response) {
+                const content = response.content || '請提供更多資訊以幫助您找到合適的產品。';
+                const suggestions = response.suggestions || [];
+                
+                let html = `
+                    <div class="elicitation-container">
+                        <p>${content}</p>
+                `;
+                
+                if (suggestions.length > 0) {
+                    html += '<div class="suggestions">';
+                    suggestions.forEach(suggestion => {
+                        html += `<span class="suggestion-chip">${suggestion}</span>`;
+                    });
+                    html += '</div>';
+                }
+                
+                html += '</div>';
+                container.innerHTML = html;
+            }
+
+            renderRecommendation(container, response) {
+                const content = response.content || '';
+                const recommendations = response.recommendations || [];
+                
+                container.innerHTML = this.formatRecommendations(content, recommendations);
+            }
+
+            renderFunnelComplete(container, response) {
+                console.log('✅ Rendering funnel complete:', response);
+                
+                const { target_flow, original_query, user_choice, message } = response;
+                
+                let html = `
+                    <div class="funnel-complete">
+                        <h3>✅ 需求分析完成</h3>
+                        <p class="complete-message">${message || '已為您分析完成，正在準備結果...'}</p>
+                        
+                        <div class="flow-info">
+                            <h4>📋 分析結果</h4>
+                            <p><strong>原始查詢：</strong>${original_query || '未知'}</p>
+                            <p><strong>選擇流程：</strong>${target_flow || '未知'}</p>
+                            ${user_choice ? `<p><strong>選擇選項：</strong>${user_choice.label || user_choice}</p>` : ''}
+                        </div>
+                        
+                        <div class="loading-indicator">
+                            <div class="loading"></div>
+                            <p>正在執行專業分析...</p>
+                        </div>
+                    </div>
+                `;
+                
+                container.innerHTML = html;
+                
+                // 如果有進一步的處理結果，可以在這裡添加
+                if (response.recommendations) {
+                    // 直接顯示推薦結果
+                    setTimeout(() => {
+                        this.renderRecommendation(container, response);
+                    }, 1500);
+                }
+            }
+
+            renderClarification(container, response) {
+                const content = response.content || '需要您澄清一些細節。';
+                container.innerHTML = `<div class="clarification">${content}</div>`;
+            }
+
+            renderError(container, response) {
+                const error = response.error || response.content || '發生未知錯誤';
+                container.innerHTML = `<div class="error">❌ ${error}</div>`;
+            }
+
+            renderGeneralResponse(container, response) {
+                console.log('🔧 renderGeneralResponse called with:', response);
+                
+                // 處理一般結構化回應
+                if (response.content) {
+                    console.log('📄 Using response.content');
+                    container.innerHTML = response.content;
+                } else if (response.message) {
+                    console.log('📄 Using response.message');
+                    container.innerHTML = response.message;
+                } else if (typeof response === 'string') {
+                    console.log('📄 Response is string, displaying directly');
+                    container.textContent = response;
+                } else {
+                    // 如果沒有明確的內容字段，嘗試提供更友善的顯示
+                    console.log('❓ Unknown response format, using fallback display');
+                    
+                    let displayContent = '';
+                    
+                    // 檢查是否有常見的字段
+                    if (response.type) {
+                        displayContent += `<p><strong>類型:</strong> ${response.type}</p>`;
+                    }
+                    
+                    if (response.error) {
+                        displayContent += `<p style="color: red;"><strong>錯誤:</strong> ${response.error}</p>`;
+                    }
+                    
+                    if (response.session_id) {
+                        displayContent += `<p><strong>會話ID:</strong> ${response.session_id}</p>`;
+                    }
+                    
+                    // 如果沒有任何有用的字段，顯示JSON（但更美觀）
+                    if (!displayContent) {
+                        displayContent = `
+                            <div style="background: #f5f5f5; padding: 10px; border-radius: 8px; margin: 10px 0;">
+                                <p><strong>⚠️ 未知回應格式</strong></p>
+                                <details>
+                                    <summary>點擊查看原始數據 (調試用)</summary>
+                                    <pre style="font-size: 12px; overflow-x: auto;">${JSON.stringify(response, null, 2)}</pre>
+                                </details>
+                            </div>
+                        `;
+                    }
+                    
+                    container.innerHTML = displayContent;
+                }
+            }
+
+            async handleFunnelOptionClick(optionId, sessionId) {
+                console.log('🎯 Funnel option clicked:', { optionId, sessionId });
+                
+                // 🔄 禁用所有選項按鈕防止重複點擊
+                const optionButtons = document.querySelectorAll('.funnel-option-btn');
+                optionButtons.forEach(btn => {
+                    btn.disabled = true;
+                    btn.style.opacity = '0.6';
+                    btn.style.cursor = 'not-allowed';
+                });
+                
+                // 標示已選擇的選項
+                const selectedButton = document.querySelector(`[data-option-id="${optionId}"]`);
+                if (selectedButton) {
+                    selectedButton.style.backgroundColor = '#667eea';
+                    selectedButton.style.color = 'white';
+                    selectedButton.style.border = '2px solid #667eea';
+                }
+                
+                try {
+                    // 發送選擇到後端
+                    const response = await fetch('/api/mgfd_cursor/chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            message: `選擇選項: ${optionId}`,
+                            session_id: sessionId
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('處理選擇失敗');
+                    }
+
+                    const data = await response.json();
+                    
+                    // 🗺️ 清理相關的問題歷史（避免重複問題）
+                    this.clearRelatedQuestionHistory(optionId, sessionId);
+                    
+                    // 添加新的回應
+                    this.addMessage('assistant', data.response, data);
+                    this.updateSessionInfo(data);
+
+                } catch (error) {
+                    console.error('處理funnel選擇失敗:', error);
+                    this.showError('處理選擇失敗，請重試');
+                    
+                    // 🔄 發生錯誤時重新啟用選項按鈕
+                    const optionButtons = document.querySelectorAll('.funnel-option-btn');
+                    optionButtons.forEach(btn => {
+                        btn.disabled = false;
+                        btn.style.opacity = '1';
+                        btn.style.cursor = 'pointer';
+                    });
+                }
+            }
+            
+            // 🗺️ 新增：清理相關問題歷史的方法
+            clearRelatedQuestionHistory(selectedOptionId, currentSessionId = '') {
+                console.log('🧹 Clearing related question history for option:', selectedOptionId, 'session:', currentSessionId);
+                
+                // 清理策略：
+                // 1. 清理超過10分鐘的舊問題歷史
+                // 2. 清理當前會話中可能導致循環的相關問題
+                const keysToDelete = [];
+                const currentTime = Date.now();
+                const MAX_AGE = 10 * 60 * 1000; // 10分鐘
+                
+                for (const [key, timestamp] of this.questionHistory.entries()) {
+                    // 清理超過10分鐘的舊問題歷史
+                    const age = currentTime - timestamp;
+                    if (age > MAX_AGE) {
+                        keysToDelete.push(key);
+                        console.log('🕒 Marking old question for deletion:', key, `(${Math.round(age/1000)}s old)`);
+                        continue;
+                    }
+                    
+                    // 清理當前會話中5分鐘內的相關問題（防止立即重複）
+                    if (currentSessionId && age < 5 * 60 * 1000) {
+                        // 如果問題包含當前會話ID且時間較近，考慮清理
+                        const sessionPrefix = `fq_`;
+                        if (key.startsWith(sessionPrefix)) {
+                            // 這是一個funnel question，如果用戶已經選擇了選項，清理相關的問題
+                            keysToDelete.push(key);
+                            console.log('🔄 Marking recent related question for deletion:', key, `(${Math.round(age/1000)}s ago)`);
+                        }
+                    }
+                }
+                
+                // 刪除標記的問題歷史
+                keysToDelete.forEach(key => {
+                    this.questionHistory.delete(key);
+                    console.log('🗑️ Cleaned question:', key);
+                });
+                
+                console.log('✅ Question history cleanup complete:', {
+                    remainingEntries: this.questionHistory.size,
+                    deletedEntries: keysToDelete.length,
+                    selectedOption: selectedOptionId,
+                    sessionId: currentSessionId
+                });
+            }
+
+            formatRecommendations(content, recommendations) {
+                let html = `<div>${content}</div>`;
+                
+                if (recommendations && recommendations.length > 0) {
+                    html += '<div class="recommendations">';
+                    recommendations.forEach(product => {
+                        html += `
+                            <div class="recommendation-item">
+                                <div class="product-name">${product.name}</div>
+                                <div class="product-details">
+                                    品牌: ${product.brand.toUpperCase()}<br>
+                                    處理器: ${product.cpu}<br>
+                                    顯示卡: ${product.gpu}<br>
+                                    記憶體: ${product.ram}<br>
+                                    重量: ${product.weight}<br>
+                                    描述: ${product.description}
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                }
+
+                return html;
+            }
+
+            updateSessionInfo(data = null) {
+                const sessionInfo = document.getElementById('sessionInfo');
+                if (data) {
+                    sessionInfo.innerHTML = `
+                        會話ID: ${this.sessionId}<br>
+                        當前階段: ${data.current_stage}<br>
+                        已填寫槽位: ${Object.keys(data.filled_slots).length}
+                    `;
+                } else {
+                    sessionInfo.innerHTML = `會話ID: ${this.sessionId}`;
+                }
+            }
+
+            updateStats(stats) {
+                const statsDiv = document.getElementById('stats');
+                statsDiv.innerHTML = `
+                    活躍會話: ${stats.active_sessions} | 
+                    產品數量: ${stats.total_products} | 
+                    槽位架構: ${stats.slot_schema_count}
+                `;
+            }
+
+            setLoadingState(loading) {
+                const sendButton = document.getElementById('sendButton');
+                const messageInput = document.getElementById('messageInput');
+
+                if (loading) {
+                    sendButton.innerHTML = '<div class="loading"></div>';
+                    sendButton.disabled = true;
+                    messageInput.disabled = true;
+                } else {
+                    sendButton.innerHTML = '發送';
+                    sendButton.disabled = false;
+                    messageInput.disabled = false;
+                }
+            }
+
+            showError(message) {
+                const chatContainer = document.getElementById('chatContainer');
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error';
+                errorDiv.textContent = message;
+                chatContainer.appendChild(errorDiv);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+        }
+
+        // 初始化聊天
+        let mgfdChat;
+        document.addEventListener('DOMContentLoaded', () => {
+            mgfdChat = new MGFDChat();
+        });
+    </script>
+</body>
+</html>
+
+
+

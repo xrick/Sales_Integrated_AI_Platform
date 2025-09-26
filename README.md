@@ -1,1 +1,2 @@
-# Sales_Integrated_AI_Platform
+# Sales Integrated Platform
+A AI-Based platform

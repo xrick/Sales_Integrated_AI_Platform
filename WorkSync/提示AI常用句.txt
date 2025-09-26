@@ -1,0 +1,102 @@
+專案日誌
+請將問題的描述、除錯歷程、BUG如何發現、相關聯發現、更有效率的解決方法或架構，記錄至docs/MGFD_DEV_Diary/mgfd_dev_diary.md
+
+
+每日工作記錄
+請將工作進度記錄至docs/MGFD_DEV_Progress/dailyprogress/work....txt
+
+在AI-Coder開始執行時，就必須告訴ai-coder。或者在每次進行修正錯誤時放在Prompt最後的部份：
+
+<chat_way>
+請**務必了解及完全遵守**一個客戶跟系統進行互動時最基本原因：
+1.收集客戶的需求，也就是我們所稱的槽位值，然後依照這些槽位值在我們自己的產品(內部)資料進行搜尋，並把較為符合客戶需求的產品推薦(各個槽位值比較接近客戶的需求)給客戶。
+我用一個簡單的flow圖來圖式化這個過程：
+round-1
+user-input -> sales-ai -> [user-input+prompt] -> LLM -> response to user for collecting user requirements -> user give one requirement value which is the actually slot value our system need.
+[check whether have collected enough data for search product]
+a. yes, perform internal data search for customer.
+b. no, create new question to ask user for another requirements values
+sales-ai -> [llm-generated-prompt according to next customer requirement] -> LLM -> generate question to user for collecting another requirement -> user give one requirement value which is the actually slot value our system need.
+[check whether have collected enough data for search product]
+..........
+we can see it is necessary for system to have multi-turn chats with customer for the requirements(slots) values collections.
+</chat_way>
+<other_init_rules>
+以下是其它在整個專案開發過程中請務必遵守的規則：
+- 請務必注意目前新架構進行的目錄位於libs/mgfd_cursor，所有的程式碼新增、修改都在這個目錄下。
+- 請**務必一步一步小心分析**整個問題，從使用者輸入，一直到出錯的資料處理順序與流程。請詳細記錄除錯歷程，
+  經歷了哪些模組、哪些函式，關聯問題的發現、發現更有效率的解決方法或架構，請盡量解釋所有的資料。
+  **務必先進行穩定且具可行性的計畫，不要直接進行修改**。
+- 將除錯過程寫入到WorkSync/MGFD_DEV_Diary/mgfd_dev_diary_2_update.md，然後擬定一個具可行性且完整的修復計畫。
+- Read("WorkSync/MGFD_DEV_Diary/mgfd_dev_diary_2_update.md", offset=0, limit=25000)
+</other_init_rules>
+
+Read Documents for continue work MGFD_DEV_Progress
+Read("WorkSync/MGFD_DEV_Diary/mgfd_dev_diary.md", offset=0, limit=25000)
+Read("WorkSync/MGFD_DEV_Diary/mgfd_dev_diary.md", offset=25001, limit=50000)
+Read(WorkSync/lessons_from_debug/bugzilla.md, offset=0, limit=25000)
+
+請AI說明debug的細節，尤其是資料流的流向及處理
+1.請用對我說明這個BUG的資料流是怎麼傳遞
+2.在哪些地方出現問題而造成這個問題
+
+<environment>
+1.we use duckdb to store product data, the path is
+2.we use milvus as our vector database
+3.we use redis as our data necessary for running system.
+</environment>
+
+debug 常用句
+請逐步並詳細分析這個問題。
+請呈現資料流從使用者輸入開始，經歷了哪些模組、函式、採用了哪些額外的資料、做了哪些運算。
+
+
+分析模組的用語
+請＊＊絕對務必極盡詳細＊＊解析libs/mgfd_cursor/mgfd_system.py這個模組，包括每一個函式的傳入參入參數、
+函式中做了哪哪些運算，最後的輸出的資料。另外還要分析這個模組中各個函式間的依賴關係，以及與外面模組的依賴關係。
+請把結果寫入到docs/[依照當時要寫入的檔案名]
+
+- 請AI讀取文件
+請務必讀取且逐步思考以下文件內容，以來解目前系統開發的架構及開發的進度
+
+
+目前針對不同ai-coder恢復實作prompt
+please carefully and completely read and analyze  the following python files:              │
+│   main.py                                                                                    │
+│   api/mgfd_routes.py                                                                         │
+│   libs/MGFDKernel.py                                                                         │
+│   libs/UserInputHandler/UserInputHandler.py                                                  │
+│   libs/KnowledgeManageHandler/knowledge_manager.py                                           │
+│   libs/ResponseGenHandler/ResponseGenHandler.py                                              │
+│   libs/StateManageHandler/StateManagementHandler.py                                          │
+│                                                             
+
+提示AI建立達到我要求的函式，但不要過度設計
+請你**務必嚴格**執行我的指令
+  請在libs/KnowledgeManageHandler/knowledge_manager.py中建立一個通用的產品規格搜尋函式：search_product_data(message)
+  1.message是客戶的query
+  2.先parent-child chunking語義搜尋功能，並且要在db/semantic_sales_spec.db中找出對應列的資料。
+  3.最後進行資料整理，以json格式回傳
+  4.請**嚴格遵守不要過度設計**，我只需要產品得規格
+  請先詳細計畫再進行實作
+
+
+請**嚴格遵守並執行我的命令**，**絕不能**自行產生額外的改動、修改、新增或刪除程式。
+
+同樣嚴格遵守只做需要的改動，用最小範圍的變更就能完成功能，絕不能自行擴充功能、改動其它無關程式碼
+
+[Execute Mode]
+1. 請依照我們討論的計畫進行修改
+2. 請以穩定並可正常運作為主要實作原則
+3. 若在實作過程中需要更多資料，請立即詢問
+4. 請在加強程式碼註解
+5. 請把程式發生錯誤時，如何回應給呼叫端進行實作
+
+[enter research]
+1. 請**務必詳細且嚴格分析** async def _process_message_internal 函式中實作步驟的可行性、穩定性、容錯性、如何除錯、效能如何評估。
+2. 請把input query開始，在系統中經歷了五大模組的那些模組，以及所有經歷的函式，列成表格輸出給我
+
+[enter plan]
+請制定穩定、可執行性高、易於修改的計畫
+
+
